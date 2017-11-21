@@ -1,0 +1,54 @@
+<html>
+
+<head>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/skeleton/2.0.4/skeleton.css" />
+    <link rel="stylesheet" href="vista-stylesheet.css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <!-- <script src="jquery.loupe.min.js"></script> -->
+    
+</head>
+
+<body>
+
+    <div class="fill">
+
+        <center>
+            <img id="i" class="picture" src="mosaic.png" />
+            <script src="vista-script.js"></script>
+            <script type="text/javascript" src="loupe.js"></script>
+        </center>
+        <div class="people">
+            <div align="right">
+                <span>
+                    These are the lives of...
+                </span>
+                <br> 
+                {% for person in people %}
+                <span> {{person}} </span>
+                <br> 
+                {% endfor %}
+            </div>
+        </div>
+        <div class="text">
+
+            <h4>
+                <span>
+                    And these tend inward to me, and I tend outward to them
+                </span>
+                <br>
+                <span>
+                    And such as it is to be of these more or less I am,
+                </span>
+                <br>
+                <span>
+                    And of these one and all I weave the song of myself
+                </span>
+            </h4>
+        </div>
+    </div>
+    
+
+</body>
+
+</html>

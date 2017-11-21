@@ -1,0 +1,39 @@
+.crop {
+ height: 500px;
+ width: 500px;
+ overflow: hidden;
+}
+.crop img {
+ height: auto;
+ width: 400px;
+}
+.fill img {
+    height: 90%;
+}
+
+.image {
+    position:relative;
+}
+
+.text {
+    left: 0;
+    position:absolute;
+    text-align:center;
+    top: 80%;
+    width: 100%
+}
+
+.people {
+    left: 0;
+    position:absolute;
+    text-align:center;
+    top: 0%;
+    width: 100%
+}
+
+h4 {
+    text-align: center; 
+}
+span { 
+    background-color: white; 
+}
