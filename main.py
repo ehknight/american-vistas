@@ -1,3 +1,4 @@
+from random import randint
 from flask import Flask, render_template, request, send_from_directory
 import flask
 
@@ -8,7 +9,10 @@ def mainroute():
     img_path = open("cur_ref_img_path.txt").readlines()[0]
     people = open("people.txt").readlines()
     print(people)
-    return render_template('american-vistas.html', people=people, img_path=img_path)
+    print(len(people))
+    rand = randint(0, 10000)
+    return render_template('american-vistas.html', 
+            people=people, img_path=img_path, rand=rand)
 
 @app.route('/<path:filename>')  
 def send_file(filename):  
@@ -18,4 +22,4 @@ def send_file(filename):
 def send_ref_images(filename):  
     return send_from_directory('ref_images', filename)
 
-app.run(host='0.0.0.0', port=80)
+app.run(host='0.0.0.0', port=80, threaded=True)

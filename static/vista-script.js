@@ -1,5 +1,5 @@
-var rgb = getAverageRGB(document.getElementById('i'));
-document.body.style.backgroundColor = 'rgb(' + rgb.r + ',' + rgb.g + ',' + rgb.b + ')';
+// var rgb = getAverageRGB(document.getElementById('i'));
+// document.body.style.backgroundColor = 'rgb(' + rgb.r + ',' + rgb.g + ',' + rgb.b + ')';
 
 function getAverageRGB(imgEl) {
     imgEl.setAttribute('crossOrigin', '*');

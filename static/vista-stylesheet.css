@@ -8,7 +8,7 @@
 	width: 400px;
 }
 .fill img {
-	height: 90%;
+	height: 80%;
 }
 
 .image {
@@ -33,15 +33,19 @@
 
 h4 {
 	text-align: center; 
+	font-family:'Special Elite'
 }
 span { 
-	background-color: white; 
+	color: white;
 }
 .floatcorner {
 	left: 0px;
 	top: 0px;
 	position: fixed;
-	max-height: 200px;
+	max-height: 100px;
 	width: auto;
 
+}
+body {
+    font-family: 'Barlow Condensed';
 }

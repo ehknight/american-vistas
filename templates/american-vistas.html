@@ -3,18 +3,20 @@
 <head>
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/skeleton/2.0.4/skeleton.css" />
+    <link href='https://fonts.googleapis.com/css?family=Barlow Condensed' rel='stylesheet'>
+    <link href='https://fonts.googleapis.com/css?family=Special Elite' rel='stylesheet'>
     <link rel="stylesheet" href="vista-stylesheet.css" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
     <!-- <script src="jquery.loupe.min.js"></script> -->
     
 </head>
 
-<body>
+<body bgcolor="black">
 
     <div class="fill">
 
         <center>
-            <img id="i" class="picture" src="mosaic.png" />
+	    <img id="i" class="picture" src="static/mosaic.png?rand={{rand}}" />
             <script src="vista-script.js"></script>
             <script type="text/javascript" src="loupe.js"></script>
         </center>
@@ -46,7 +48,7 @@
                 </span>
             </h4>
         </div>
-	<img class="floatcorner" src="ref_images/{{img_path}}"></img>
+	<img class="floatcorner" src="{{img_path}}"></img>
     </div>
     
 

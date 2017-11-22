@@ -15,10 +15,22 @@ from lxml import html
 import re
 from tqdm import tqdm
 from skimage.io import imsave
+import random
+import flickr_api
+from importlib import reload
+from time import sleep
+import imp
+imp.reload(flickr_api)
 
 
 # Analyze the collection (the "pool") of images.
-pm.set_options(flickr_api_key='2a024a42327979b79c1cefca4967b2c6')
+public = '13c7524e2634bd8db28e8730f69a5146'
+secret = 'de183f2f33150a00'
+pm.set_options(flickr_api_key=public)
+flickr_api.set_keys(public, secret)
+
+# pm.set_options(flickr_api_key='2a024a42327979b79c1cefca4967b2c6')
+# flickr_api.set_keys('2a024a42327979b79c1cefca4967b2c6', '20b52a44d59a64ef')
 
 # modified from https://stackoverflow.com/a/28487500
 
@@ -72,30 +84,36 @@ def download_images(query, pages=1):
     download_image_ = partial(download_image, query=query)
     pool.map(download_image_, enumerate(links))
 
-import random
-import flickr_api
-from importlib import reload
-from time import sleep
-reload(flickr_api)
 
-flickr_api.set_keys('2a024a42327979b79c1cefca4967b2c6', '20b52a44d59a64ef')
 
-words = ['everyday', 'nature', 'life', 'poetry', 'light', 'heart', 'art']
+words = ['everyday', 'nature', 'life', 'poetry', 'light', 'art', 'city']
 
-def get_random_flickr_users(n=10, n_iters_left=100):
+def get_random_flickr_users(n=10, n_iters_left=5):
     word = "{} {}".format(random.choice(words), random.choice(words))
-    print(word)
+    print((word, n))
     w = flickr_api.Walker(flickr_api.Photo.search, limit=n, tags=word)
+    print("created walker")
     try:
-        owners = list(set([photo.owner for photo in w]))[:n]
+        owners = [photo.owner for photo in w]
+        owner_usernames = [owner.id for owner in owners]
+        cur_owner_usernames = []
+        unique_owners = []
+        for owner, username in zip(owners, owner_usernames):
+            if username not in cur_owner_usernames:
+                print("added {} to unique owners".format(owner.username))
+                unique_owners.append(owner)
+                cur_owner_usernames.append(username)
+            else:
+                pass
+        owners = unique_owners
     except Exception as e:
         print(e)
         owners = []
     print((len(owners)))
-    if len(owners) < n and n_iters_left > 0:
+    if len(owners) < n-2 and n_iters_left > 0:
         owners.extend(get_random_flickr_users(n-len(owners), n_iters_left-1))
     print(owners)
-    return owners
+    return owners[:n]
 
 def get_username(user):
     id_ = user.id
@@ -111,12 +129,22 @@ def get_username(user):
         return id_
 
 def download_random_user_photos():
+    print("beginning to get random flickr users")
     users = get_random_flickr_users()
-    print("# of users {}".format(users))
+    print("finished getting")
+    print(("# of users {}".format(users)))
     print("\n\n")
-    usernames = [u.username for u in users]
+    usernames = '\n'.join([u.username for u in users])
     # usernames = '\n'.join(map(get_username, users))
-    open("people.txt", 'w').writelines(usernames)
+    truc_usernames = []
+    for username in usernames:
+        if len(username) > 8:
+            truc_usernames.append(username[:6]+'...')
+        else:
+            truc_usernames.append(username)
+
+
+    open("people.txt", 'w').writelines(truc_usernames)
     files = glob.glob('images/*')
     for f in files:
         os.remove(f)
@@ -125,8 +153,13 @@ def download_random_user_photos():
         photos = user.getPublicPhotos()[:100]
         pool = Pool(10)
         print("beginning download")
-        lmap(lambda x: x[1].save('images/'+str(n)+'_'+str(x[0])+'.jpg', size_label='Small'),
-                enumerate(photos))
+        try:
+            lmap(lambda x: x[1].save('images/'+str(n)+'_'+str(x[0])+'.jpg', size_label='Small'),
+                    enumerate(photos))
+        except Exception as e:
+            print("Error in downloading")
+            print(e)
+            
         print("done")
 
     return
@@ -136,8 +169,10 @@ def make_mosaic():
     open("cur_ref_img_path.txt", "w").write(img_path)
     image = Image.open(img_path)
     pool = pm.make_pool('images/'+'*.jpg')
-    mos = pm.basic_mosaic(image, pool, (40, 40))
-    imsave('static/mosaic.png', mos)  
+    mos = pm.basic_mosaic(image, pool, (50, 50))
+    print("vvvvv")
+    print(img_path)
+    imsave('static/mosaic.png', mos)
 
 def main():
     try:
