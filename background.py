@@ -1,20 +1,20 @@
-from pylab import *
 from bs4 import BeautifulSoup
 import requests
 import re
-import urllib
+import urllib.request, urllib.parse, urllib.error
 import os
 import http.cookiejar as cookielib
 import json
 from tqdm import tqdm
-from multiprocessing import Pool
 from functools import partial, lru_cache
 import photomosaic as pm
+from pathos.multiprocessing import ProcessingPool as Pool
 from PIL import Image
 import glob
 from lxml import html
 import re
 from tqdm import tqdm
+from skimage.io import imsave
 
 
 # Analyze the collection (the "pool") of images.
@@ -24,6 +24,7 @@ pm.set_options(flickr_api_key='2a024a42327979b79c1cefca4967b2c6')
 
 header = {'User-Agent':"Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/43.0.2357.134 Safari/537.36"}
 save_dir = "images/"
+lmap = lambda x, y: list(map(x, y))
 
 def get_soup(url,header):
     return BeautifulSoup(urllib.request.urlopen(urllib.request.Request(url,headers=header)),'html.parser')
@@ -49,7 +50,7 @@ def get_image_links(query, pages=1):
 
 def download_image(args, query):
     i, (img, image_type) = args
-    print("Now downloading {}".format(img))
+    print(("Now downloading {}".format(img)))
     try:
         req = urllib.request.Request(img, headers=header)
         raw_img = urllib.request.urlopen(req).read()
@@ -62,7 +63,7 @@ def download_image(args, query):
         f.write(raw_img)
         f.close()
     except Exception as e:
-        print("could not load : "+img)
+        print(("could not load : "+img))
         print(e)
 
 def download_images(query, pages=1):
@@ -81,14 +82,18 @@ flickr_api.set_keys('2a024a42327979b79c1cefca4967b2c6', '20b52a44d59a64ef')
 
 words = ['everyday', 'nature', 'life', 'poetry', 'light', 'heart', 'art']
 
-def get_random_flickr_users(n=10):
+def get_random_flickr_users(n=10, n_iters_left=100):
     word = "{} {}".format(random.choice(words), random.choice(words))
     print(word)
     w = flickr_api.Walker(flickr_api.Photo.search, limit=n, tags=word)
-    owners = list(set([photo.owner for photo in w]))[:n]
-    print(len(owners))
-    # if len(owners) < n:
-    #     owners.extend(get_random_flickr_users())
+    try:
+        owners = list(set([photo.owner for photo in w]))[:n]
+    except Exception as e:
+        print(e)
+        owners = []
+    print((len(owners)))
+    if len(owners) < n and n_iters_left > 0:
+        owners.extend(get_random_flickr_users(n-len(owners), n_iters_left-1))
     print(owners)
     return owners
 
@@ -107,26 +112,42 @@ def get_username(user):
 
 def download_random_user_photos():
     users = get_random_flickr_users()
-    usernames = '\n'.join(map(get_username, users))
+    print("# of users {}".format(users))
+    print("\n\n")
+    usernames = [u.username for u in users]
+    # usernames = '\n'.join(map(get_username, users))
     open("people.txt", 'w').writelines(usernames)
+    files = glob.glob('images/*')
+    for f in files:
+        os.remove(f)
 
     for n, user in tqdm(enumerate(users)):
-        photos = user.getPublicPhotos()
-        # pool = Pool(10)
-        for i, x in tqdm(enumerate(photos)):
-             x.save('images/'+str(n)+'_'+str(i)+'.jpg', size_label='Small')
+        photos = user.getPublicPhotos()[:100]
+        pool = Pool(10)
+        print("beginning download")
+        lmap(lambda x: x[1].save('images/'+str(n)+'_'+str(x[0])+'.jpg', size_label='Small'),
+                enumerate(photos))
+        print("done")
 
     return
 
 def make_mosaic():
-    image = Image.open(random.choice(glob.glob('ref_images/*')))
+    img_path = random.choice(glob.glob('ref_images/*'))
+    open("cur_ref_img_path.txt", "w").write(img_path)
+    image = Image.open(img_path)
     pool = pm.make_pool('images/'+'*.jpg')
     mos = pm.basic_mosaic(image, pool, (40, 40))
     imsave('static/mosaic.png', mos)  
 
 def main():
-    download_random_user_photos()
-    make_mosaic()
+    try:
+        download_random_user_photos()
+        print("FINISHED DOWNLOADING -- MAKING MOSAIC")
+        print("\n\n\n")
+        make_mosaic()
+        print("MADE MOSAIC")
+    except IndexError:
+        pass
 
 if __name__ == '__main__':
     while True:
