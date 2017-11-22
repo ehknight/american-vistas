@@ -139,12 +139,11 @@ def download_random_user_photos():
     truc_usernames = []
     for username in usernames:
         if len(username) > 8:
-            truc_usernames.append(username[:6]+'...')
+            truc_usernames.append(username[:8]+'...')
         else:
             truc_usernames.append(username)
 
 
-    open("people.txt", 'w').writelines(truc_usernames)
     files = glob.glob('images/*')
     for f in files:
         os.remove(f)
@@ -161,25 +160,25 @@ def download_random_user_photos():
             print(e)
             
         print("done")
-
-    return
+    return truc_usernames
 
 def make_mosaic():
     img_path = random.choice(glob.glob('ref_images/*'))
-    open("cur_ref_img_path.txt", "w").write(img_path)
     image = Image.open(img_path)
     pool = pm.make_pool('images/'+'*.jpg')
     mos = pm.basic_mosaic(image, pool, (50, 50))
     print("vvvvv")
     print(img_path)
     imsave('static/mosaic.png', mos)
+    open("cur_ref_img_path.txt", "w").write(img_path)
 
 def main():
     try:
-        download_random_user_photos()
+        truc_usernames = download_random_user_photos()
         print("FINISHED DOWNLOADING -- MAKING MOSAIC")
         print("\n\n\n")
         make_mosaic()
+        open("people.txt", 'w').writelines(truc_usernames)
         print("MADE MOSAIC")
     except IndexError:
         pass
